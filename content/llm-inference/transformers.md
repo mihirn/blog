@@ -189,7 +189,7 @@ unlike the dense network, only a subset of them are activated per token.
 
 The number and size of the experts, as well as the number of experts each token
 is sent to, are hyperparameters determined prior to training the model. A
-common routing model is to send tokens to the top-k experts and then combine
+common routing model is to send tokens to the top-$k$ experts and then combine
 the outputs using a weighted sum. Tokens do not have to select the same experts
 for every layer they pass through. The routing layer is a critical part of MoE
 models: if all the requests are sent to the same expert, it is effectively a

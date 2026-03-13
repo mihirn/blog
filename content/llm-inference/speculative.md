@@ -51,7 +51,7 @@ Medusa heads are independent of each other and each generates tokens without
 knowing the actual predictions of prior heads, which means a misprediction by
 an early head often invalidates the entire draft sequence.
 
-Medusa gets around this by taking the top-k predictions from every head and
+Medusa gets around this by taking the top-$k$ predictions from every head and
 then generates a number of possible draft sequences to validate using the
 Cartesian product of the individual outputs, called the _Medusa Tree_. Since
 the total number of possibilities is exponential in the number of heads and k,
