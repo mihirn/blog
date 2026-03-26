@@ -1,2 +1,6 @@
-{{- $page := site.GetPage (.Get 0) -}}
-<a href="{{ $page.RelPermalink }}">{{ $page.Title }}</a>
+{{- $path := .Get 0 -}}
+{{- with site.GetPage $path -}}
+<a href="{{ .RelPermalink }}">{{ .Title }}</a>
+{{- else -}}
+{{- errorf "pagelink shortcode: could not find page %q at %s" $path $.Position -}}
+{{- end -}}
