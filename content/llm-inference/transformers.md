@@ -41,7 +41,10 @@ Transformers are a neural network architecture with a large number of layers,
 each of which has primarily two phases: the _attention_ phase and the
 _feed-forward network_ phase, often separated by normalization operations. The
 embedding vectors of the input form the initial context; this context is then
-modified by each of these layers using giant matrix multiplication operations.
+sequentially modified by each of these layers using giant matrix multiplication
+operations. This modified context, which represents the intermediate state of
+the input as it is being processed by the transformer, is also referred to as
+the _hidden states_ or _activations_ of the transformer[^hidden].
 
 The basic idea around attention is that the embeddings from the input text are,
 during inference, static isolated conversions and lack any knowledge about the
@@ -53,11 +56,12 @@ several attention phases represent different points in the embedding space.
 
 The module of the Transformer responsible for attention is called the
 _attention head_. Each layer has multiple attention heads, and takes a matrix
-representing the embeddings of the context and outputs an identically-sized
-matrix which forms the context that is then sent to the feed-forward layer and
-eventually to the next layer of the model. The matrix operations are divided
-evenly amongst the heads of the layer, with each one producing partial results
-which are concatenated to form the entire context for the feed-forward layer.
+representing the hidden state of the previous layer (or the embedding of the
+input, for the first layer) and outputs an identically-sized matrix which is
+sent to the feed-forward layer whose output forms the hidden state for the next
+layer of the model. The matrix operations are divided evenly amongst the heads
+of the layer, with each one producing partial results which are concatenated to
+form the activations for the feed-forward layer.
 
 Each attention head operates using three parameters—Query (Q), Key (K), and
 Value (V)—which are derived from the input tokens. It has three model
@@ -92,22 +96,21 @@ grow very large, so they are divided by $\sqrt{d_k}$ and then normalized using
 a softmax function which converts them into a probability distribution called
 the _attention scores_.
 
-The attention score matrix has a row and a column for each token in the context
-and represents the effect that each token has on every other token in the
-context or how much a token is influenced by another token. In ML parlance,
-this is how much a token attends to another token: $A_{i,j}$ is the amount that
-token $i$ of the context attends to token $j$. Attention scores are not
-symmetric and, in some cases, are deliberately masked out to prevent later
-tokens from having an undue influence on earlier ones, particularly while
-generating outputs.
+The attention score matrix has a row and a column for each token in the hidden
+state and represents the effect that each token has on every other token or how
+much a token is influenced by another token. In ML parlance, this is how much a
+token attends to another token: $A_{i,j}$ is the amount that token $i$ attends
+to token $j$. Attention scores are not symmetric and, in some cases, are
+deliberately masked out to prevent later tokens from having an undue influence
+on earlier ones, particularly while generating outputs.
 
 The attention scores are then multiplied by the Value (V) matrix to get the
-updated embedding values for every token in the context. The embedding values
-from all the heads are concatenated and then multiplied by the $W^O$ matrix, so
-that the independent knowledge (or perspectives) learnt from each head can be
-mixed into a single, coherent representation in the updated context matrix.
-This matrix is then passed through a feed-forward neural network, i.e., a
-fully-connected neural network without any loops or cross-token dependencies,
+updated representation for every token in the input hidden state. The embedding
+values from all the heads are concatenated and then multiplied by the $W^O$
+matrix, so that the independent knowledge (or perspectives) learnt from each
+head can be mixed into a single, coherent representation in the updated hidden
+state. This matrix is then passed through a feed-forward neural network, i.e.,
+a fully-connected neural network without any loops or cross-token dependencies,
 so token processing is fully parallelizable. This output can then be passed to
 the next transformer layer.
 
@@ -219,3 +222,7 @@ inference and serving requests continues at {{<pagelink "llm-inference/kvcache"
 1. [Mastering LLM Techniques: Inference Optimization](https://developer.nvidia.com/blog/mastering-llm-techniques-inference-optimization/)
 1. [How Attention Got So Efficient (Video)](https://www.youtube.com/watch?v=Y-o545eYjXM)
 1. [How DeepSeek Rewrote the Transformer \[MLA\] (Video)](https://www.youtube.com/watch?v=0VLAoVGf_74)
+
+[^hidden]: These terms are sometimes used interchangeably, while at other times
+    hidden states strictly refer to the state between layers of the transformer
+    and activations encompass all intermediate computations.

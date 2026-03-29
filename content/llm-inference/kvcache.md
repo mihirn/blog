@@ -52,24 +52,24 @@ which go into handling request concurrency, which are discussed at {{<pagelink
 
 The prefill and the autoregressive phases are not actually different in the
 kind of operations that they execute, but only differ in granularity: both of
-them take a context (the prompt in the case of prefill, and the prompt and all
-the generated tokens in the case of the autoregressive phase) and pass it
-through several transformer (attention and feed-forward) layers to generate a
-new token.
+them take a context or hidden state (the prompt in the case of prefill, and the
+prompt and all the generated tokens in the case of the autoregressive phase)
+and pass it through several transformer (attention and feed-forward) layers to
+generate a new token.
 
 Every head of every attention block in every layer of the transformer takes the
-input context and generates Q, K, and V matrices from it, each of which are
-sized with a row for every token in the input. These matrices are then
-multiplied making this step quadratic in complexity. Assume an input prompt of
-3 tokens, the Q, K, and V matrices have 3 rows and are multiplied to generate a
-single token. This is then appended to each of the matrices, making them have 4
-rows, which are once again multiplied. If one looks at the $Q \times K^T$
-operation, the top left hand corner of the resulting matrix is identical to the
-previous iteration with the compute being repeated unnecessarily—the only
-required new compute is that the Q vector of the new token has to be multiplied
-by the entire $K^T$ matrix and then the V matrix (this only works because
-causal masking prevents future tokens from affecting previously generated
-ones).
+hidden state from the previous layer and generates Q, K, and V matrices from
+it, each of which are sized with a row for every token in the input hidden
+state. These matrices are then multiplied making this step quadratic in
+complexity. Assume an input prompt of 3 tokens, the Q, K, and V matrices have 3
+rows and are multiplied to generate a single token. This is then appended to
+each of the matrices, making them have 4 rows, which are once again multiplied.
+If one looks at the $Q \times K^T$ operation, the top left hand corner of the
+resulting matrix is identical to the previous iteration with the compute being
+repeated unnecessarily—the only required new compute is that the Q vector of
+the new token has to be multiplied by the entire $K^T$ matrix and then the V
+matrix (this only works because causal masking prevents future tokens from
+affecting previously generated ones).
 
 ![]({{< asset "images/kv.webp" >}})
 
@@ -87,9 +87,9 @@ matrices are being cached for every request in every head in every layer,
 techniques such as multi/group-query attention (MQA/GQA) or multi-head latent
 attention (MLA) substantially reduce the size of the KV cache during inference.
 
-The KV cache grows with the length of the context and can grow unboundedly
-large: to prevent this, there usually is a maximum allowed size for the KV
-cache and tokens are evicted as the context grows beyond that. Simple eviction
+The KV cache grows with the number of tokens in the sequence and can grow
+unboundedly large: to prevent this, there usually is a maximum allowed size for
+the KV cache and tokens are evicted as it grows beyond that. Simple eviction
 strategies, such as sliding windows, fail spectacularly the moment the KV cache
 exceeds the maximum size and the [initial tokens are
 evicted](https://hanlab.mit.edu/blog/streamingllm).
