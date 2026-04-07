@@ -1,5 +1,5 @@
 ---
-title: "Ramblings"
+title: "LLM Inference Notes"
 description: "LLM inference infrastructure for a systems audience."
 ---
 

@@ -1,6 +1,6 @@
 baseURL = "http://localhost:1313/"
 languageCode = "en"
-title = "Ramblings"
+title = "Notes"
 enableRobotsTXT = true
 disableKinds = ["taxonomy", "term"]
 
